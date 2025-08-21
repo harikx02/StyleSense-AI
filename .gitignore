@@ -1,0 +1,30 @@
+# Ignore virtual environment folder
+fashion_env/
+venv/
+env/
+Fashion Recommender other stuff/
+
+# Ignore Python cache files
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore model files
+*.h5
+*.pkl
+
+# Ignore environment variables file
+.env
+
+# Ignore VSCode settings
+.vscode/
+tempCodeRunnerFile*
+
+
+# Ignore macOS and Windows system files
+.DS_Store
+Thumbs.db
+data/meta_Clothing_Shoes_and_Jewelry.json

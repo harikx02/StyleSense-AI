@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title or "StyleSense AI – ML-Powered Fashion Recommender" }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section bg-gradient-primary text-white py-5">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-6">
+        <h1 class="display-4 fw-bold mb-3">
+        <i class="fas fa-robot"></i> Discover Fashion With AI
+        </h1>
+        <p class="lead mb-4">
+            Welcome to StyleSense AI — An Intelligent Fashion Discovery Platform Powered by Machine Learning. Explore Curated Styles From Amazon’s Vast Catalog Tailored to Your Taste.
+        </p>
+        <div class="d-flex gap-3">
+          <a href="{{ url_for('search') }}" class="btn btn-light btn-lg">
+            <i class="fas fa-search"></i> Explore Products
+          </a>
+          <a href="#featured" class="btn btn-outline-light btn-lg">
+            <i class="fas fa-star"></i> Featured Items
+          </a>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="row g-3">
+          {% if stats %}
+            <div class="col-6">
+              <div class="card bg-rgba-white text-dark text-center">
+                <div class="card-body">
+                  <h3 class="fw-bold text-primary">{{ "{:,}".format(stats.total_products or 0) }}</h3>
+                  <small>Products</small>
+                </div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="card bg-rgba-white text-dark text-center">
+                <div class="card-body">
+                  <h3 class="fw-bold text-success">{{ stats.total_brands or 0 }}</h3>
+                  <small>Fashion Brands</small>
+                </div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="card bg-rgba-white text-dark text-center">
+                <div class="card-body">
+                  <h3 class="fw-bold text-warning">{{ stats.total_categories or 0 }}</h3>
+                  <small>Categories</small>
+                </div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="card bg-rgba-white text-dark text-center">
+                <div class="card-body">
+                  <h3 class="fw-bold text-info">AI</h3>
+                  <small>ML Powered</small>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Popular Categories -->
+{% if categories %}
+<section class="py-4 bg-light">
+  <div class="container">
+    <h5 class="mb-3"><i class="fas fa-fire"></i> Popular Categories</h5>
+    <div class="d-flex flex-wrap gap-2">
+      {% for category in categories %}
+        <a href="{{ url_for('category_page', category_name=category['name']) }}" class="btn btn-outline-secondary m-1">
+          {{ category['name'] }} ({{ category['count'] }})
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- Featured Products -->
+<section id="featured" class="py-5">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="h3 fw-bold"><i class="fas fa-star text-warning"></i> Curated Picks for You</h2>
+      <a href="{{ url_for('search') }}" class="btn btn-outline-primary">View All <i class="fas fa-arrow-right"></i></a>
+    </div>
+
+    {% if featured_products %}
+    <div class="row g-4">
+      {% for product in featured_products %}
+      <div class="col-lg-3 col-md-4 col-sm-6">
+        <div class="card product-card h-100 shadow-sm">
+          <div class="product-image-container position-relative">
+            <img 
+              src="{{ product.get('imageURL') or product.get('image_url') or 'https://via.placeholder.com/300x300?text=No+Image' }}" 
+              class="card-img-top product-image"
+              alt="{{ product.get('title') or product.get('name') or 'No Title' }}"
+              onerror="this.src='https://via.placeholder.com/300x300?text=No+Image'">
+            {% if product.rating and product.rating >= 4.5 %}
+            <span class="badge bg-success position-absolute top-0 start-0 m-2">
+              <i class="fas fa-star"></i> {{ product.rating }}
+            </span>
+            {% endif %}
+          </div>
+          <div class="card-body d-flex flex-column">
+            <h6 class="card-title text-truncate-2">{{ product.get('name') or product.get('title') }}</h6>
+            <div class="mb-2">
+              <small class="text-muted">
+                <i class="fas fa-tag"></i> {{ product.get('brand', 'Unknown') }}
+              </small>
+              {% if product.get('main_category') %}
+              <br><small class="text-muted">
+                <i class="fas fa-folder"></i> {{ product.main_category }}
+              </small>
+              {% endif %}
+            </div>
+            {% if product.get('price') %}
+            <div class="mb-2">
+              <span class="h5 text-success fw-bold">${{ "%.2f"|format(product.price) }}</span>
+            </div>
+            {% endif %}
+            {% if product.get('rating') %}
+            <div class="mb-2">
+              <div class="d-flex align-items-center">
+                {% for i in range(5) %}
+                  {% if i < (product.rating | round) %}
+                    <i class="fas fa-star text-warning"></i>
+                  {% else %}
+                    <i class="far fa-star text-warning"></i>
+                  {% endif %}
+                {% endfor %}
+                <small class="ms-2 text-muted">{{ product.rating }}/5</small>
+              </div>
+            </div>
+            {% endif %}
+            <div class="mt-auto">
+              <a href="{{ url_for('product_detail', product_id=product.id) }}" class="btn btn-primary btn-sm w-100">
+                <i class="fas fa-eye"></i> View Details
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5 text-muted">
+      <i class="fas fa-box-open fa-3x mb-3"></i>
+      <h4>No Products Available</h4>
+      <p>Please check if the dataset is loaded correctly.</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- Top Brands -->
+{% if brands %}
+<section class="py-5 bg-light">
+  <div class="container">
+    <h3 class="mb-4"><i class="fas fa-crown text-warning"></i> Top Fashion Brands</h3>
+    <div class="row g-3">
+      {% for brand in brands %}
+      <div class="col-md-2 col-4">
+        <a href="{{ url_for('brand_page', brand_name=brand['name']) }}" class="text-decoration-none text-dark">
+          <div class="card border-light shadow-sm p-2 text-center">
+            <strong>{{ brand['name'] }}</strong><br>
+            <small>{{ brand['count'] }} items</small>
+          </div>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- How It Works -->
+<section class="py-5">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h3><i class="fas fa-cogs"></i> How Our AI Recommendations Work</h3>
+      <p class="text-muted">Behind Every Suggestion Is Smart Data Science — Powered by Machine Learning Models Analyzing Amazon’s Fashion Metadata.</p>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-4 text-center">
+        <i class="fas fa-database fa-3x text-primary mb-3"></i>
+        <h5>Real Amazon Data</h5>
+        <p class="text-muted">We Analyze Authentic Amazon Fashion Product Metadata Including Titles, Brands, Categories, and Descriptions.</p>
+      </div>
+      <div class="col-md-4 text-center">
+        <i class="fas fa-brain fa-3x text-success mb-3"></i>
+        <h5>ML Algorithm</h5>
+        <p class="text-muted">We Use TF-IDF Vectorization and Cosine Similarity to Find Products With Similar Characteristics.</p>
+      </div>
+      <div class="col-md-4 text-center">
+        <i class="fas fa-magic fa-3x text-warning mb-3"></i>
+        <h5>Smart Recommendations</h5>
+        <p class="text-muted">Receive Personalized Product Suggestions Based on Content Similarity and User Preferences.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

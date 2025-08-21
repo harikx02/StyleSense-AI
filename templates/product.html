@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} - Amazon Fashion{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('home') }}">Home</a></li>
+            {% if product.main_category %}
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('category_page', category_name=product.category) }}">
+                    {{ product.main_category }}
+                </a>
+            </li>
+            {% endif %}
+            <li class="breadcrumb-item active">{{ product.name[:50] }}...</li>
+        </ol>
+    </nav>
+
+    <!-- Product Details -->
+    <div class="row g-4">
+        <!-- Product Image -->
+        <div class="col-lg-6">
+            <div class="product-image-large">
+                <img src="{{ product.image_url }}" 
+                     class="img-fluid rounded shadow" 
+                     alt="{{ product.name }}"
+                     onerror="this.src='https://via.placeholder.com/500x500?text=No+Image'"
+                     style="width: 100%; max-height: 500px; object-fit: contain; background: #f8f9fa;">
+            </div>
+        </div>
+
+        <!-- Product Info -->
+        <div class="col-lg-6">
+            <div class="product-info">
+                <h1 class="h3 fw-bold mb-3">{{ product.name }}</h1>
+                
+                <!-- Brand and Category -->
+                <div class="mb-3">
+                    {% if product.brand and product.brand != 'Unknown' %}
+                    <span class="badge bg-primary me-2">
+                        <i class="fas fa-tag"></i> {{ product.brand }}
+                    </span>
+                    {% endif %}
+                    {% if product.main_category %}
+                    <span class="badge bg-secondary me-2">
+                        <i class="fas fa-folder"></i> {{ product.main_category }}
+                    </span>
+                    {% endif %}
+                    {% if product.subcategory and product.subcategory != 'General' %}
+                    <span class="badge bg-info">
+                        <i class="fas fa-tags"></i> {{ product.subcategory }}
+                    </span>
+                    {% endif %}
+                </div>
+
+                <!-- Rating -->
+                {% if product.rating %}
+                <div class="mb-3">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            {% for i in range(5) %}
+                                {% if i < (product.rating | round) %}
+                                    <i class="fas fa-star text-warning"></i>
+                                {% else %}
+                                    <i class="far fa-star text-warning"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <span class="h5 mb-0 text-warning">{{ product.rating }}/5</span>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Price -->
+                {% if product.price and product.price > 0 %}
+                <div class="mb-4">
+                    <span class="h2 text-success fw-bold">${{ "%.2f"|format(product.price) }}</span>
+                </div>
+                {% endif %}
+
+                <!-- Description -->
+                {% if product.description %}
+                <div class="mb-4">
+                    <h5>Product Description</h5>
+                    <p class="text-muted">{{ product.description }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Product Features -->
+                {% if product.features %}
+                <div class="mb-4">
+                    <h6>Features</h6>
+                    <ul class="list-unstyled">
+                        {% for feature in product.features %}
+                        <li><i class="fas fa-check text-success me-2"></i>{{ feature }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <!-- Additional Info -->
+                <div class="row g-3 mb-4">
+                    {% if product.color %}
+                    <div class="col-sm-6">
+                        <div class="d-flex">
+                            <strong class="me-2">Color:</strong>
+                            <span>{{ product.color }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if product.material %}
+                    <div class="col-sm-6">
+                        <div class="d-flex">
+                            <strong class="me-2">Material:</strong>
+                            <span>{{ product.material }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if product.size %}
+                    <div class="col-sm-6">
+                        <div class="d-flex">
+                            <strong class="me-2">Size:</strong>
+                            <span>{{ product.size }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-grid gap-2 d-md-flex">
+                    <button class="btn btn-success btn-lg">
+                        <i class="fas fa-shopping-cart"></i> Add to Cart
+                    </button>
+                    <button class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-heart"></i> Wishlist
+                    </button>
+                    <button class="btn btn-outline-secondary btn-lg" onclick="shareProduct()">
+                        <i class="fas fa-share"></i> Share
+                    </button>
+                </div>
+
+                <!-- Amazon ASIN -->
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <strong>Amazon ASIN:</strong> {{ product.id }}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recommendations Section -->
+    {% if recommendations %}
+    <section class="mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3><i class="fas fa-robot text-primary"></i> AI Recommended for You</h3>
+            <small class="text-muted">Based on this product's characteristics</small>
+        </div>
+        
+        <div class="row g-4">
+            {% for rec in recommendations %}
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                <div class="card product-card h-100 shadow-sm">
+                    <div class="product-image-container">
+                        <img src="{{ rec.image_url }}" 
+                             class="card-img-top product-image" 
+                             alt="{{ rec.name }}"
+                             onerror="this.src='https://via.placeholder.com/300x300?text=No+Image'">
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <h6 class="card-title text-truncate-2">{{ rec.name }}</h6>
+                        <div class="mb-2">
+                            <small class="text-muted">
+                                <i class="fas fa-tag"></i> {{ rec.brand or 'Unknown' }}
+                            </small>
+                        </div>
+                        
+                        {% if rec.price and rec.price > 0 %}
+                        <div class="mb-2">
+                            <span class="h6 text-success fw-bold">${{ "%.2f"|format(rec.price) }}</span>
+                        </div>
+                        {% endif %}
+                        
+                        {% if rec.rating %}
+                        <div class="mb-2">
+                            <small>
+                                {% for i in range(5) %}
+                                    {% if i < (rec.rating | round) %}
+                                        <i class="fas fa-star text-warning"></i>
+                                    {% else %}
+                                        <i class="far fa-star text-warning"></i>
+                                    {% endif %}
+                                {% endfor %}
+                                {{ rec.rating }}
+                            </small>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mt-auto">
+                            <a href="{{ url_for('product_detail', product_id=rec.id) }}" 
+                               class="btn btn-outline-primary btn-sm w-100">
+                                <i class="fas fa-eye"></i> View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Related Products by Brand -->
+    {% if related_by_brand %}
+    <section class="mt-5">
+        <h4 class="mb-4">
+            <i class="fas fa-tags"></i> More from {{ product.brand }}
+        </h4>
+        <div class="row g-4">
+            {% for item in related_by_brand[:4] %}
+            <div class="col-lg-3 col-md-6">
+                <div class="card product-card h-100">
+                    <img src="{{ item.image_url }}" 
+                         class="card-img-top product-image" 
+                         alt="{{ item.name }}"
+                         onerror="this.src='https://via.placeholder.com/300x300?text=No+Image'">
+                    <div class="card-body">
+                        <h6 class="card-title text-truncate-2">{{ item.name }}</h6>
+                        {% if item.price and item.price > 0 %}
+                        <p class="text-success fw-bold">${{ "%.2f"|format(item.price) }}</p>
+                        {% endif %}
+                        <a href="{{ url_for('product_detail', product_id=item.id) }}" 
+                           class="btn btn-outline-primary btn-sm w-100">View</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Related Products by Category -->
+    {% if related_by_category %}
+    <section class="mt-5">
+        <h4 class="mb-4">
+            <i class="fas fa-folder"></i> More in {{ product.main_category }}
+        </h4>
+        <div class="row g-4">
+            {% for item in related_by_category[:4] %}
+            <div class="col-lg-3 col-md-6">
+                <div class="card product-card h-100">
+                    <img src="{{ item.image_url }}" 
+                         class="card-img-top product-image" 
+                         alt="{{ item.name }}"
+                         onerror="this.src='https://via.placeholder.com/300x300?text=No+Image'">
+                    <div class="card-body">
+                        <h6 class="card-title text-truncate-2">{{ item.name }}</h6>
+                        <small class="text-muted">{{ item.brand }}</small>
+                        {% if item.price and item.price > 0 %}
+                        <p class="text-success fw-bold">${{ "%.2f"|format(item.price) }}</p>
+                        {% endif %}
+                        <a href="{{ url_for('product_detail', product_id=item.id) }}" 
+                           class="btn btn-outline-primary btn-sm w-100">View</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+
+<script>
+function shareProduct() {
+    if (navigator.share) {
+        navigator.share({
+            title: '{{ product.name }}',
+            text: 'Check out this product on Amazon Fashion Recommender',
+            url: window.location.href
+        });
+    } else {
+        // Fallback - copy to clipboard
+        navigator.clipboard.writeText(window.location.href);
+        alert('Product link copied to clipboard!');
+    }
+}
+</script>
+{% endblock %}

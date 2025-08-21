@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Error {{ error_code or '' }} - Amazon Fashion{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 text-center">
+            <div class="error-container">
+                {% if error_code == '404' %}
+                <i class="fas fa-search fa-5x text-muted mb-4"></i>
+                <h1 class="display-4 fw-bold text-primary">404</h1>
+                <h2 class="h4 mb-3">Page Not Found</h2>
+                {% elif error_code == '500' %}
+                <i class="fas fa-exclamation-triangle fa-5x text-warning mb-4"></i>
+                <h1 class="display-4 fw-bold text-warning">500</h1>
+                <h2 class="h4 mb-3">Server Error</h2>
+                {% else %}
+                <i class="fas fa-exclamation-circle fa-5x text-danger mb-4"></i>
+                <h2 class="h4 mb-3">Oops! Something went wrong</h2>
+                {% endif %}
+                
+                <p class="text-muted mb-4">
+                    {{ message or "The page you're looking for doesn't exist or has been moved." }}
+                </p>
+                
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a href="{{ url_for('home') }}" class="btn btn-primary">
+                        <i class="fas fa-home"></i> Back to Home
+                    </a>
+                    <a href="{{ url_for('search') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-search"></i> Browse Products
+                    </a>
+                    <button onclick="window.history.back()" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Go Back
+                    </button>
+                </div>
+                
+                <div class="mt-5">
+                    <h5>Popular Categories</h5>
+                    <div class="d-flex gap-2 justify-content-center flex-wrap mt-3">
+                        <a href="{{ url_for('search', category='Clothing') }}" class="btn btn-outline-info btn-sm">Clothing</a>
+                        <a href="{{ url_for('search', category='Shoes') }}" class="btn btn-outline-info btn-sm">Shoes</a>
+                        <a href="{{ url_for('search', category='Accessories') }}" class="btn btn-outline-info btn-sm">Accessories</a>
+                        <a href="{{ url_for('search', category='Jewelry') }}" class="btn btn-outline-info btn-sm">Jewelry</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

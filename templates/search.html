@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}{{ search_info.search_type or "Search Results" }} – StyleSense AI{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Search Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <h2>{{ search_info.search_type or "Search Results" }}</h2>
+                    <p class="text-muted mb-0">
+                        Found {{ search_info.total_results or 0 }} products
+                        {% if search_info.query %}
+                        for "{{ search_info.query }}"
+                        {% endif %}
+                    </p>
+                </div>
+                
+                <!-- Sort Options -->
+                <div class="d-flex gap-2 flex-wrap">
+                    <select class="form-select form-select-sm" style="width: auto;" onchange="updateSort(this.value)">
+                        <option value="relevance" {% if request.args.get('sort') == 'relevance' %}selected{% endif %}>Sort by Relevance</option>
+                        <option value="price_low" {% if request.args.get('sort') == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                        <option value="price_high" {% if request.args.get('sort') == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                        <option value="rating" {% if request.args.get('sort') == 'rating' %}selected{% endif %}>Customer Rating</option>
+                        <option value="name" {% if request.args.get('sort') == 'name' %}selected{% endif %}>Name A-Z</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        {% for product in products %}
+        <div class="col">
+            <div class="card h-100 shadow-sm">
+               <img src="{{ product.get('imageURLHighRes') or product.get('imageURL') or url_for('static', filename='default.jpg') }}" 
+                    class="card-img-top" 
+                    alt="{{ product.get('title', 'No Title') }}"
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.title[:60] }}</h5>
+                    <p class="card-text">
+                        <strong>Brand:</strong> {{ product.brand or "Unknown" }}<br>
+                        {% if product.price %}
+                            <strong>Price:</strong> {{ product.price }}
+                        {% else %}
+                            <strong class="text-muted">Price not available</strong>
+                        {% endif %}
+                    </p>
+                    <a href="{{ url_for('product_detail', asin=product.asin) }}" class="btn btn-primary btn-sm">View Product</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+function updateSort(value) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('sort', value);
+    window.location.href = url.toString();
+}
+</script>
+{% endblock %}
